@@ -11,6 +11,7 @@
 </ul>
 
 <form id='form' method='POST'> {% csrf_token %}
+        <input type="hidden" id="my_username" value="{{ user.username }}" />
 {{form.as_p }}
 <input type='submit' class='btn btn-primary'/>
 </form>
@@ -19,12 +20,15 @@
 
 {% block script %}
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reconnecting-websocket/1.0.0/reconnecting-websocket.js"></script>
 <script>
 // websocket scripts
 
 var loc = window.location
 var formData = $("#form")
 var msgInput = $("#id_message")
+var chatHolder = $("#chat-items")
+var me = $("#my_username").val()
 
 // for production, we wss
 var wsStart = 'ws://'
@@ -33,18 +37,22 @@ if (loc.protocol == 'https:'){
 }
 
 var endpoint = wsStart + loc.host + loc.pathname
-var socket = new WebSocket(endpoint)
+// now our socket reconnects automatically
+var socket = new ReconnectingWebSocket(endpoint)
 
 socket.onmessage = function(e){
-    console.log("message", e);
+    var chatDataMsg = JSON.parse(e.data)
+    chatHolder.append("<li>" + chatDataMsg.message + " via " + chatDataMsg.username + "</li>");
 }
 socket.onopen = function(e){
     console.log("open", e);
     formData.submit(function(event){
         event.preventDefault();
 
+        var msgText = msgInput.val();
+
         var finalData = {
-            'message': msgInput.val()
+            'message': msgText
         }
 
         socket.send(JSON.stringify(finalData));
