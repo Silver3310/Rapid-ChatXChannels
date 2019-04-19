@@ -22,5 +22,41 @@
 <script>
 // websocket scripts
 
+var loc = window.location
+var formData = $("#form")
+var msgInput = $("#id_message")
+
+// for production, we wss
+var wsStart = 'ws://'
+if (loc.protocol == 'https:'){
+    wsStart = 'wss://'
+}
+
+var endpoint = wsStart + loc.host + loc.pathname
+var socket = new WebSocket(endpoint)
+
+socket.onmessage = function(e){
+    console.log("message", e);
+}
+socket.onopen = function(e){
+    console.log("open", e);
+    formData.submit(function(event){
+        event.preventDefault();
+
+        var finalData = {
+            'message': msgInput.val()
+        }
+
+        socket.send(JSON.stringify(finalData));
+        formData[0].reset()
+    })
+}
+socket.onerror = function(e){
+    console.log("error", e);
+}
+socket.onclose = function(e){
+    console.log("close", e);
+}
+
 </script>
 {% endblock %}

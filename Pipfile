@@ -9,6 +9,7 @@ verify_ssl = true
 pytz = "==2018.5"
 redis = "==2.10.6"
 Django = "==2.0.7"
+channels = "==2.1.2"
 
 [requires]
 python_version = "3.6"
